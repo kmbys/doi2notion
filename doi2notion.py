@@ -36,7 +36,7 @@ def doi2notion(notion_api, notion_db, doi):
     url = work['URL'] if 'URL' in work else ''
     abstract = work['abstract'] if 'abstract' in work else ''
     doi = work['DOI'] if 'DOI' in work else ''
-    type = 'Journal Article'
+    worktype = work.get('type') or ''
     bibtex = f"@article{{{doi},\n author = {{{authors}}},\n title = {{{title}}},\n journal = {{{journal}}},\n year = {{{year}}},\n doi = {{{doi}}}\n}}"
 
     notion_client.Client(auth=notion_api).pages.create(
@@ -51,7 +51,7 @@ def doi2notion(notion_api, notion_db, doi):
             'URL': {'url': url},
             'Abstract': {'rich_text': [{'text': {'content': abstract}}]},
             'DOI': {'rich_text': [{'text': {'content': doi}}]},
-            'Type': {'select': {'name': type}},
+            'Type': {'select': {'name': worktype}},
             'Bibtex': {'rich_text': [{'text': {'content': bibtex}}]}
         }
     )
