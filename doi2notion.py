@@ -25,10 +25,12 @@ def get_work_from_crossref(doi):
 
 def doi2notion(notion_api, notion_db, doi):
     work = get_work_from_crossref(doi)
+    authors = work['author']
 
+    year = work['created']['date-parts'][0][0]
+    name = authors[0]['family'] + str(year)
     title = work['title'][0] if 'title' in work else ''
-    authors = ', '.join(author['given'] + ' ' + author['family'] for author in work['author']) if 'author' in work else ''
-    year = work['created']['date-parts'][0][0] if 'created' in work else ''
+    authors = ', '.join(author['given'] + ' ' + author['family'] for author in authors)
     journal = work['container-title'][0] if 'container-title' in work else ''
     filename = title.replace(' ', '_') + '.pdf'
     url = work['URL'] if 'URL' in work else ''
@@ -40,7 +42,8 @@ def doi2notion(notion_api, notion_db, doi):
     notion_client.Client(auth=notion_api).pages.create(
         parent={'database_id': notion_db},
         properties={
-            'Title': {'title': [{'text': {'content': title}}]},
+            'Name': {'title': [{'text': {'content': name}}]},
+            'Title': {'rich_text': [{'text': {'content': title}}]},
             'Authors': {'rich_text': [{'text': {'content': authors}}]},
             'Year': {'number': int(year)},
             'Journal': {'rich_text': [{'text': {'content': journal}}]},
