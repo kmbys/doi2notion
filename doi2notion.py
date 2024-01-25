@@ -50,11 +50,26 @@ def doi2notion(notion_api, notion_db, doi):
             'Journal': {'rich_text': [{'text': {'content': journal}}]},
             'Filename': {'rich_text': [{'text': {'content': filename}}]},
             'URL': {'url': url},
-            'Abstract': {'rich_text': [{'text': {'content': abstract}}]},
             'DOI': {'rich_text': [{'text': {'content': doi}}]},
             'Type': {'select': {'name': worktype}},
             'Bibtex': {'rich_text': [{'text': {'content': bibtex}}]}
-        }
+        },
+        children=[
+            {
+                "object": "block",
+                "type": "heading_1",
+                "heading_1": {'rich_text': [{'text': {'content': title}}]}
+            },
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {'rich_text': [{'text': {'content': 'Abstract'}}]}
+            },
+            {
+                "object": "block",
+                "paragraph": {'rich_text': [{'text': {'content': abstract}}]}
+            }
+        ]
     )
 
 if __name__ == '__main__':
