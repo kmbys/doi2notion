@@ -1,5 +1,6 @@
 import requests
 import notion_client
+import sys
 
 def get_work_from_crossref(doi):
     """get works from CrossRef API
@@ -55,3 +56,6 @@ def doi2notion(notion_api, notion_db, doi):
             'Bibtex': {'rich_text': [{'text': {'content': bibtex}}]}
         }
     )
+
+if __name__ == '__main__':
+    doi2notion(sys.argv[1], sys.argv[2], sys.argv[3])
