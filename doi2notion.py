@@ -1,47 +1,45 @@
-# 必要なライブラリをインポートする
-import pyperclip
 import requests
-from notion_client import Client
+import notion_client
 
-# クリップボードからDOIのURLを取得する
-doi_url = pyperclip.paste()
-doi = '/'.join(doi_url.split('/')[-2:]) #doiを抽出して取り出す
-
-# CrossRefのエンドポイントを設定
-crossref_endpoint = 'https://api.crossref.org/works/'
-
-# NotionのAPIキーとデータベースIDを設定してください
-notion_api = 'your_api'
-notion_db = 'your_db_id'
-
-# Notionの初期化
-notion = Client(auth=notion_api)
-database = notion.databases.retrieve(database_id=notion_db)
-
-# 論文の情報（JSON）を取得しPythonの辞書形式に変換
-url = f"{crossref_endpoint}{doi}"
-headers = {'Accept': 'application/json'}
-params = {'mailto': 'your_mail_adress'}  # 任意
-response = requests.get(url, headers=headers, params=params)
-
-
-if response.status_code == 200:
+def get_work_from_crossref(doi):
+    """get works from CrossRef API
+    
+    Params:
+        doi DOI (ex. 10.1063/1.4961149)
+    Returns:
+        Work dict
+    """
+    response = requests.get(
+        f'https://api.crossref.org/works/{doi}',
+        headers={
+            'Accept': 'application/json'
+        }
+    )
+    if response.status_code != 200:
+        raise RuntimeError('Request failed with status code: {response.status_code}')
     data = response.json()
-    if 'message' in data:
-        data = data['message']
-        title = data['title'][0] if 'title' in data else ''
-        authors = ', '.join(author['given'] + ' ' + author['family'] for author in data['author']) if 'author' in data else ''
-        year = data['created']['date-parts'][0][0] if 'created' in data else ''
-        journal = data['container-title'][0] if 'container-title' in data else ''
-        filename = title.replace(' ', '_') + '.pdf'
-        url = data['URL'] if 'URL' in data else ''
-        abstract = data['abstract'] if 'abstract' in data else ''
-        doi = data['DOI'] if 'DOI' in data else ''
-        type = 'Journal Article'
-        bibtex = f"@article{{{doi},\n author = {{{authors}}},\n title = {{{title}}},\n journal = {{{journal}}},\n year = {{{year}}},\n doi = {{{doi}}}\n}}"
+    if not 'message' in data:
+        raise RuntimeError('No message in data')
 
-        # Notionにデータを格納する
-        new_page = {
+    return data['message']
+
+def doi2notion(notion_api, notion_db, doi):
+    work = get_work_from_crossref(doi)
+
+    title = work['title'][0] if 'title' in work else ''
+    authors = ', '.join(author['given'] + ' ' + author['family'] for author in work['author']) if 'author' in work else ''
+    year = work['created']['date-parts'][0][0] if 'created' in work else ''
+    journal = work['container-title'][0] if 'container-title' in work else ''
+    filename = title.replace(' ', '_') + '.pdf'
+    url = work['URL'] if 'URL' in work else ''
+    abstract = work['abstract'] if 'abstract' in work else ''
+    doi = work['DOI'] if 'DOI' in work else ''
+    type = 'Journal Article'
+    bibtex = f"@article{{{doi},\n author = {{{authors}}},\n title = {{{title}}},\n journal = {{{journal}}},\n year = {{{year}}},\n doi = {{{doi}}}\n}}"
+
+    notion_client.Client(auth=notion_api).pages.create(
+        parent={'database_id': notion_db},
+        properties={
             'Title': {'title': [{'text': {'content': title}}]},
             'Authors': {'rich_text': [{'text': {'content': authors}}]},
             'Year': {'number': int(year)},
@@ -53,9 +51,4 @@ if response.status_code == 200:
             'Type': {'select': {'name': type}},
             'Bibtex': {'rich_text': [{'text': {'content': bibtex}}]}
         }
-
-        notion.pages.create(parent={'database_id': notion_db}, properties=new_page)
-    else:
-        print('No message in data')
-else:
-    print('Request failed with status code', response.status_code)
+    )
