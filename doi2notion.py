@@ -31,8 +31,9 @@ def doi2notion(notion_api, notion_db, doi):
     year = work['created']['date-parts'][0][0]
     name = authors[0]['family'] + str(year)
     title = work['title'][0] if 'title' in work else ''
-    authors = ', '.join(author['given'] + ' ' + author['family'] for author in authors)
+    authors = [author['given'] + ' ' + author['family'] for author in authors]
     journal = work['container-title'][0] if 'container-title' in work else ''
+    subject = work['subject'] or []
     filename = title.replace(' ', '_') + '.pdf'
     url = work['URL'] if 'URL' in work else ''
     abstract = work['abstract'] if 'abstract' in work else ''
@@ -44,32 +45,16 @@ def doi2notion(notion_api, notion_db, doi):
         parent={'database_id': notion_db},
         properties={
             'Name': {'title': [{'text': {'content': name}}]},
-            'Title': {'rich_text': [{'text': {'content': title}}]},
-            'Authors': {'rich_text': [{'text': {'content': authors}}]},
+            'Authors': {'multi_select': [{'name': author} for author in authors]},
             'Year': {'number': int(year)},
-            'Journal': {'rich_text': [{'text': {'content': journal}}]},
-            'Filename': {'rich_text': [{'text': {'content': filename}}]},
-            'URL': {'url': url},
+            'Journal': {'select': {'name': journal}},
+            'Subject': {'multi_select': [{'name': _subject} for _subject in subject]},
             'DOI': {'rich_text': [{'text': {'content': doi}}]},
             'Type': {'select': {'name': worktype}},
-            'Bibtex': {'rich_text': [{'text': {'content': bibtex}}]}
+            'Bibtex': {'rich_text': [{'text': {'content': bibtex}}]},
+            'Title': {'rich_text': [{'text': {'content': title}}]},
+            'Abstract': {'rich_text': [{'text': {'content': abstract}}]},
         },
-        children=[
-            {
-                "object": "block",
-                "type": "heading_1",
-                "heading_1": {'rich_text': [{'text': {'content': title}}]}
-            },
-            {
-                "object": "block",
-                "type": "heading_2",
-                "heading_2": {'rich_text': [{'text': {'content': 'Abstract'}}]}
-            },
-            {
-                "object": "block",
-                "paragraph": {'rich_text': [{'text': {'content': abstract}}]}
-            }
-        ]
     )
 
 if __name__ == '__main__':

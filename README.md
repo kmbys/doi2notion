@@ -7,15 +7,15 @@ https://qiita.com/130n/items/ee8b89e87f992ee5b7cf
 2. Create database
     - Add connections to the integration
     - Add following properties
-        - Title (Text)
-        - Authors (Text)
+        - Authors (Multi-select)
         - Year (Number)
-        - Journal (Text)
-        - Filename (Text)
-        - URL (URL)
+        - Journal (Select)
+        - Subject (Multi-select)
         - DOI (Text)
         - Type (Select)
         - Bibtex (Text)
+        - Title (Text)
+        - Abstract (Text)
 
 ## Python
 Install packages.
