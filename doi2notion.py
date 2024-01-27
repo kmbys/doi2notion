@@ -38,6 +38,7 @@ def doi2notion(notion_api, notion_db, doi):
     url = work['URL'] if 'URL' in work else ''
     abstract = work['abstract'] if 'abstract' in work else ''
     doi = work['DOI'] if 'DOI' in work else ''
+    url = work['URL'] if 'URL' in work else ''
     worktype = work.get('type') or ''
     bibtex = f"@article{{{doi},\n author = {{{authors}}},\n title = {{{title}}},\n journal = {{{journal}}},\n year = {{{year}}},\n doi = {{{doi}}}\n}}"
 
@@ -48,8 +49,9 @@ def doi2notion(notion_api, notion_db, doi):
             'Authors': {'multi_select': [{'name': author} for author in authors]},
             'Year': {'number': int(year)},
             'Journal': {'select': {'name': journal}},
-            'Subject': {'multi_select': [{'name': _subject} for _subject in subject]},
+            'Subject': {'multi_select': [{'name': _subject.replace(',', '[comma]')} for _subject in subject]},
             'DOI': {'rich_text': [{'text': {'content': doi}}]},
+            'URL': {'url': url},
             'Type': {'select': {'name': worktype}},
             'Bibtex': {'rich_text': [{'text': {'content': bibtex}}]},
             'Title': {'rich_text': [{'text': {'content': title}}]},

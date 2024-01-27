@@ -12,6 +12,7 @@ https://qiita.com/130n/items/ee8b89e87f992ee5b7cf
         - Journal (Select)
         - Subject (Multi-select)
         - DOI (Text)
+        - URL (URL)
         - Type (Select)
         - Bibtex (Text)
         - Title (Text)
