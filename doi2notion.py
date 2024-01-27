@@ -55,6 +55,22 @@ def doi2notion(notion_api, notion_db, doi):
             'Title': {'rich_text': [{'text': {'content': title}}]},
             'Abstract': {'rich_text': [{'text': {'content': abstract}}]},
         },
+        children=[
+            {
+                "object": "block",
+                "type": "heading_1",
+                "heading_1": {'rich_text': [{'text': {'content': title}}]}
+            },
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {'rich_text': [{'text': {'content': 'Abstract'}}]}
+            },
+            {
+                "object": "block",
+                "paragraph": {'rich_text': [{'text': {'content': abstract}}]}
+            }
+        ]
     )
 
 if __name__ == '__main__':
